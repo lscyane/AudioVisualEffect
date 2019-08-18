@@ -1,0 +1,80 @@
+﻿<Window x:Class="AudioVisualEffect.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+        xmlns:ip="clr-namespace:System.Windows.Interop;assembly=PresentationCore"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+        xmlns:local="clr-namespace:AudioVisualEffect"
+        xmlns:v="clr-namespace:AudioVisualEffect.Views"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded"
+        Title="MainWindow" Width="1200" Height="660" >
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadedCommand}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding ClosingCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+
+    <DockPanel dd:DragDrop.IsDropTarget="True" 
+               dd:DragDrop.DropHandler="{Binding}">
+        
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File"/>
+        </Menu>
+
+        <DockPanel DockPanel.Dock="Bottom"  HorizontalAlignment="Stretch">
+            <StatusBar HorizontalAlignment="Stretch">
+                <StatusBarItem DockPanel.Dock="Left" Content="Audio FPS:"/>
+                <StatusBarItem DockPanel.Dock="Left" Content="{Binding AudioFPS}"/>
+                <Separator DockPanel.Dock="Left" />
+                <StatusBarItem DockPanel.Dock="Left" Content="Graphic FPS:"/>
+                <StatusBarItem DockPanel.Dock="Left" Name="Status_GFPS"/>
+                <Separator DockPanel.Dock="Left" />
+                
+                <StatusBarItem DockPanel.Dock="Right" Content="{Binding StatusMessage}"/>
+                <Separator Background="#00000000"/>
+            </StatusBar>
+        </DockPanel>
+
+        <ProgressBar DockPanel.Dock="Bottom"
+                     Background="Olive" Height="10" Margin="5"/>
+        <Grid DockPanel.Dock="Bottom"
+              Background="LightGreen" Height="40">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Button Content="Start/Stop" Command="{Binding MusicPlay}"/>
+            </StackPanel>
+        </Grid>
+
+        <StackPanel DockPanel.Dock="Right" Orientation="Vertical" Width="200">
+            <GroupBox Header="Graphic">
+                <StackPanel Orientation="Vertical">
+                    <RadioButton Checked="RadioButton_Checked" Content="FFT Raw"/>
+                    <RadioButton Checked="RadioButton_Checked" Content="FFT dB Level" />
+                    <RadioButton Checked="RadioButton_Checked" Content="Wave Raw"/>
+                    <RadioButton Checked="RadioButton_Checked" Content="Wave Round"/>
+                    <RadioButton Checked="RadioButton_Checked" Content="Wave Radial"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Option">
+                <v:VisualControlBase x:Name="VisualControl"/>
+            </GroupBox>
+        </StackPanel>
+
+        <Border BorderBrush="Gray" BorderThickness="1" Width="961" Height="541">
+            <Image Name="CanvasArea">
+                <Image.Source>
+                    <v:DxLibImage x:Name="dxImage" Render="dxImage_Render" Reset="dxImage_Reset" FpsUpdate="dxImage_FpsUpdate"/>
+                </Image.Source>
+            </Image>
+        </Border>
+       
+    </DockPanel>
+
+</Window>
