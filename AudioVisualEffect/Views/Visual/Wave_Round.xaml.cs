@@ -29,15 +29,18 @@ namespace AudioVisualEffect.Views
 
         public override void Render(Complex[] fft, float[] wav)
         {
+            int radius = (int)this.Radius.Value;            // 半径
+            int level_mag = (int)this.LevelMag.Value;       // レベル倍率
+
             for (int j = 0; j < wav.Length - 1; j++)
             {
                 double rad = 2 * Math.PI / wav.Length * j;
-                double sin = ((WindowHeight / 4) + wav[j] * 50) * Math.Sin(rad);
-                double cos = ((WindowHeight / 4) + wav[j] * 50) * Math.Cos(rad);
+                double sin = (radius + wav[j] * level_mag) * Math.Sin(rad);
+                double cos = (radius + wav[j] * level_mag) * Math.Cos(rad);
 
                 rad = 2 * Math.PI / wav.Length * (j + 1);
-                double sin_next = ((WindowHeight / 4) + wav[j + 1] * 50) * Math.Sin(rad);
-                double cos_next = ((WindowHeight / 4) + wav[j + 1] * 50) * Math.Cos(rad);
+                double sin_next = (radius + wav[j + 1] * level_mag) * Math.Sin(rad);
+                double cos_next = (radius + wav[j + 1] * level_mag) * Math.Cos(rad);
 
                 DxLibDLL.DX.DrawLine(
                     (int)(WindowWidth / 2 + sin),
@@ -50,12 +53,12 @@ namespace AudioVisualEffect.Views
             // 始点と終点を繋ぐ
             {
                 double rad = 0;
-                double sin = ((WindowHeight / 4) + wav[0] * 50) * Math.Sin(rad);
-                double cos = ((WindowHeight / 4) + wav[0] * 50) * Math.Cos(rad);
+                double sin = (radius + wav[0] * level_mag) * Math.Sin(rad);
+                double cos = (radius + wav[0] * level_mag) * Math.Cos(rad);
 
                 rad = 2 * Math.PI / wav.Length * (wav.Length - 1);
-                double sin_next = ((WindowHeight / 4) + wav[wav.Length - 1] * 50) * Math.Sin(rad);
-                double cos_next = ((WindowHeight / 4) + wav[wav.Length - 1] * 50) * Math.Cos(rad);
+                double sin_next = (radius + wav[wav.Length - 1] * level_mag) * Math.Sin(rad);
+                double cos_next = (radius + wav[wav.Length - 1] * level_mag) * Math.Cos(rad);
 
                 DxLibDLL.DX.DrawLine(
                     (int)(WindowWidth / 2 + sin),

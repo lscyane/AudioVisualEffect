@@ -24,19 +24,20 @@ namespace AudioVisualEffect.Views
         public Wave_Raw()
         {
             InitializeComponent();
-            
         }
 
 
         public override void Render(Complex[] fft, float[] wav)
         {
+            int level_mag = (int)this.LevelMag.Value;       // レベル倍率
+
             for (int j = 0; j < wav.Length - 1; j++)
             {
                 DxLibDLL.DX.DrawLine(
                 (int)(j * WindowWidth / wav.Length),
-                (int)((WindowHeight / 2) - wav[j] * 50),
+                (int)((WindowHeight / 2) - wav[j] * level_mag),
                 (int)((j + 1) * WindowWidth / wav.Length),
-                (int)((WindowHeight / 2) - wav[j + 1] * 50),
+                (int)((WindowHeight / 2) - wav[j + 1] * level_mag),
                 DxLibDLL.DX.GetColor(255, 255, 255));
             }
 

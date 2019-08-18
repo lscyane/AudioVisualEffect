@@ -64,10 +64,11 @@ namespace AudioVisualEffect.Views
 
             float[] raw_dat = this.fft_data.Item1;
             Complex[] fft_dat = this.fft_data.Item2;
+            VisualControlBase vcb = this.VisualControl.Content as VisualControlBase;
 
-            if ((raw_dat != null) && (fft_dat != null) && (this.VisualControl != null)) 
+            if ((raw_dat != null) && (fft_dat != null) && (vcb != null)) 
             {
-                this.VisualControl.Render(fft_dat, raw_dat);
+                vcb.Render(fft_dat, raw_dat);
             }
         }
 
@@ -103,7 +104,7 @@ namespace AudioVisualEffect.Views
                     default:                visual = null; break;
                 }
 
-                VisualControl = visual;
+                VisualControl.Content = visual;
             }
         }
     }

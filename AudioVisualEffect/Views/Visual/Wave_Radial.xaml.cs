@@ -29,11 +29,12 @@ namespace AudioVisualEffect.Views
 
         public override void Render(Complex[] fft, float[] wav)
         {
-            int radius = 200;           // 半径
-            int level_mag = 100;        // レベル倍率
-            bool absolute = false;
+            int radius = (int)this.Radius.Value;            // 半径
+            int level_mag = (int)this.LevelMag.Value;       // レベル倍率
+            bool absolute = this.Absolute.IsChecked.Value;
+            bool inverse = this.Inverse.IsChecked.Value;
 
-            for (int j = 0; j < wav.Length - 1; j++)
+            for (int j = 0; j < wav.Length; j++)
             {
                 float dat;
                 if (absolute)
@@ -43,6 +44,11 @@ namespace AudioVisualEffect.Views
                 else
                 {
                     dat = wav[j];
+                }
+
+                if (inverse)
+                {
+                    dat *= -1;
                 }
 
                 double rad = 2 * Math.PI / wav.Length * j;

@@ -30,6 +30,8 @@ namespace AudioVisualEffect.Views
 
         public override void Render(Complex[] fft, float[] wav)
         {
+            int level_mag = (int)this.LevelMag.Value;       // レベル倍率
+
             for (int j = 0; j < fft.Length; j++)
             {
                 //複素数の大きさを計算
@@ -40,7 +42,7 @@ namespace AudioVisualEffect.Views
                     (int)(j * WindowWidth / fft.Length),
                     (int)(WindowHeight),
                     (int)(j * WindowWidth / fft.Length),
-                    (int)(WindowHeight - diagonal * WindowHeight * 8),
+                    (int)(WindowHeight - diagonal * level_mag),
                     DxLibDLL.DX.GetColor(255, 255, 255));
 
             }

@@ -62,8 +62,8 @@
                     <RadioButton Checked="RadioButton_Checked" Content="Wave Radial"/>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="Option">
-                <v:VisualControlBase x:Name="VisualControl"/>
+            <GroupBox Header="Option" Name="VisualControl">
+
             </GroupBox>
         </StackPanel>
 
