@@ -30,7 +30,7 @@ namespace AudioVisualEffect.Views
             InitializeComponent();
             this.DataContext = main_vm;
 
-            ViewModels.Messenger.Instance.GetEvent<PubSubEvent<(float[], Complex[])>>().Subscribe(HammingWindowReceive);
+            ViewModels.MainWindowViewModel.Messenger.GetEvent<PubSubEvent<(float[], Complex[])>>().Subscribe(HammingWindowReceive);
 
             // TODO仮 どこかで紐付けしたい
             VisualControlBase.WindowWidth = 960;
@@ -81,10 +81,8 @@ namespace AudioVisualEffect.Views
 
         private void dxImage_FpsUpdate(object sender, EventArgs e)
         {
-            var ea = e as FpsUpdataEventArgs;
-            if (ea != null) {
-                this.Status_GFPS.Content = ea.Fps;
-            }
+            var fps = sender as double?;
+            this.Status_GFPS.Content = fps?.ToString();
         }
 
 

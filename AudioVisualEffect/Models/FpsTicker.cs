@@ -9,11 +9,10 @@ using System.Diagnostics;
 namespace AudioVisualEffect.Models
 {
     /// <summary>
-    /// フレーム調整
+    /// フレーム計測
     /// </summary>
     public class FpsTicker
     {
-        public double Fps { get; private set; }
         public double Interval { get; set; } = 1.0;
         public event EventHandler FpsUpdate;
 
@@ -21,6 +20,7 @@ namespace AudioVisualEffect.Models
         private double ElpasedSec { get { return sw.ElapsedTicks / (double)Stopwatch.Frequency; } }
         private double oldElpasedSec;
         private long FrameCount;
+        private double Fps;
 
 
 
@@ -47,6 +47,7 @@ namespace AudioVisualEffect.Models
         /// <summary>
         /// フレーム更新
         /// </summary>
+        /// <remarks> 描画毎に呼び出すこと </remarks>
         public void FrameUpdate()
         {
             double elpasedSec = this.ElpasedSec;
@@ -58,14 +59,9 @@ namespace AudioVisualEffect.Models
                 this.Fps = this.FrameCount / (elpasedSec - this.oldElpasedSec);
                 this.FrameCount = 0;
                 this.oldElpasedSec = elpasedSec;
-                this.FpsUpdate?.Invoke(null, EventArgs.Empty);
+
+                this.FpsUpdate?.Invoke(this.Fps, EventArgs.Empty);
             }
-        }
-
-
-        public new string ToString()
-        {
-            return string.Format("{0:#0.00}", this.Fps);
         }
     }
 }

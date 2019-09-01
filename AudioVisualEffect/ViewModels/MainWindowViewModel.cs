@@ -19,6 +19,9 @@ namespace AudioVisualEffect.ViewModels
 {
     class MainWindowViewModel : BindableBase, GongSolutions.Wpf.DragDrop.IDropTarget
     {
+        public static EventAggregator Messenger { get; } = new EventAggregator();
+
+
         //==========================================================
         // UI関係
         //==========================================================
@@ -131,8 +134,6 @@ namespace AudioVisualEffect.ViewModels
             wavPlayer.Init(wavProvider);
 
 
-
-
             // FPS計測
             this.fpsTicker.FpsUpdate += FpsTicker_FpsUpdate;
         }
@@ -192,16 +193,11 @@ namespace AudioVisualEffect.ViewModels
         {
             if (IsPlay)
             {
-                //long tick = sw.ElapsedTicks;
-                //long elapsed_tick = tick - old_tick;
-                //long elapsed_ms = elapsed_tick * 1000 / Stopwatch.Frequency;
-                //double elapsed_sample = this.bufferedWaveProvider.WaveFormat.SampleRate / 1000.0 * elapsed_ms;
-
                 // 88200 / 60 = 1470 byte (735 samples)
                 int bytePerFrame = (int)(this.bufferedWaveProvider.WaveFormat.AverageBytesPerSecond / 60.0);
                 int samplePerFrame = bytePerFrame / (this.bufferedWaveProvider.WaveFormat.BlockAlign);
 
-                // 最後までいったら提訴ボタンを強制
+                // 最後までいったら停止ボタンを強制
                 if ((this.wavPosition + bytePerFrame * 4) > this.wavData.Length)
                 {
                     this.MusicPlayAction();
@@ -256,7 +252,7 @@ namespace AudioVisualEffect.ViewModels
                     this.fpsTicker.FrameUpdate();
 
                     // View への送信
-                    Messenger.Instance.GetEvent<PubSubEvent<(float[], Complex[])>>().Publish(x.Result);
+                    Messenger.GetEvent<PubSubEvent<(float[], Complex[])>>().Publish(x.Result);
                 });
 
 
@@ -276,26 +272,16 @@ namespace AudioVisualEffect.ViewModels
 
 
 
-
-
-
-
-
+        /// <summary>
+        /// FPS情報通知
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FpsTicker_FpsUpdate(object sender, EventArgs e)
         {
-            this.AudioFPS = this.fpsTicker.ToString(); ;
+            var fps = sender as double?;
+            this.AudioFPS = fps?.ToString();
         }
 
-
-
-
-
-
-
-    }
-
-    class Messenger : EventAggregator
-    {
-        public static Messenger Instance { get; } = new Messenger();
     }
 }

@@ -11,13 +11,6 @@ using System.Windows.Media;
 
 namespace AudioVisualEffect.Views
 {
-    public class FpsUpdataEventArgs : EventArgs
-    {
-        public string Fps;
-    }
-
-
-
     class DxLibImage : D3DImage
     {
         public event EventHandler Reset;
@@ -28,9 +21,9 @@ namespace AudioVisualEffect.Views
         public int BufferWidth { get; set; } = 960;
         public int BufferHeight { get; set; } = 540;
 
-
-        DX.SetRestoreGraphCallbackCallback RestoreGraphCallback;
-        private Models.FpsTicker fpsTicker = new Models.FpsTicker();
+            
+        DX.SetRestoreGraphCallbackCallback RestoreGraphCallback;        // デバイスリセット時のイベント
+        private Models.FpsTicker fpsTicker = new Models.FpsTicker();    // 描画FPSの計測
 
 
         /// <summary>
@@ -47,13 +40,13 @@ namespace AudioVisualEffect.Views
 
             DX.SetUserWindow(hwnd.Handle);                              // 描画ウィンドウの設定
             DX.SetGraphMode(this.BufferWidth, this.BufferHeight, 32);   // グラフィックモードの設定
-            DX.SetAlwaysRunFlag(DX.TRUE);                               // 非アクティブ時も処理続行
-            DX.SetDrawScreen(DX.DX_SCREEN_BACK);                        // 描画先をバックバッファへ設定
-            DX.SetUseFPUPreserveFlag(DX.TRUE);                          // FPUの精度を落とさない
-            DX.SetWaitVSyncFlag(DX.FALSE);                              // VSync同期を無効
-            DX.SetOutApplicationLogValidFlag(DX.FALSE);                 // ログ出力停止
-            DX.SetDoubleStartValidFlag(DX.TRUE);                        // 多重起動を許可
-            DX.SetUseIMEFlag(DX.TRUE);                                  // IMEを有効
+            DX.SetAlwaysRunFlag(DX.TRUE);                               // 非アクティブ時の処理設定
+            DX.SetDrawScreen(DX.DX_SCREEN_BACK);                        // 描画先設定
+            DX.SetUseFPUPreserveFlag(DX.TRUE);                          // FPUの精度
+            DX.SetWaitVSyncFlag(DX.FALSE);                              // VSync同期
+            DX.SetOutApplicationLogValidFlag(DX.FALSE);                 // ログ出力
+            DX.SetDoubleStartValidFlag(DX.TRUE);                        // 多重起動許可の設定
+            DX.SetUseIMEFlag(DX.FALSE);                                 // IMEの状態
             DX.SetUseDirect3DVersion(DX.DX_DIRECT3D_9EX);               // Direct3D 11 が使用できる環境でも Direct3D 9 を使用する
             DX.SetBackgroundColor(0, 0, 0);
             if (DX.DxLib_Init() == -1)
@@ -63,7 +56,7 @@ namespace AudioVisualEffect.Views
 
             // GC対策(不要?)
             DX.SetUseGraphBaseDataBackup(DX.FALSE);             // 自分ででデバイスロスト時の処理を行う
-            RestoreGraphCallback = RestoreGraph;
+            this.RestoreGraphCallback = RestoreGraph;
             DX.SetRestoreGraphCallback(RestoreGraphCallback);   // デバイスリセット時のイベントを設定
 
             // メインループ
@@ -71,10 +64,10 @@ namespace AudioVisualEffect.Views
 
             // 描画ループ
             CompositionTarget.Rendering += CompositionTarget_Rendering;
-            IsFrontBufferAvailableChanged += d3dImage_IsFrontBufferAvailableChanged;
-            SetBackBuffer();
+            base.IsFrontBufferAvailableChanged += d3dImage_IsFrontBufferAvailableChanged;
+            this.SetBackBuffer();
 
-            this.fpsTicker.FpsUpdate += OnFpsUpdate;
+            this.fpsTicker.FpsUpdate += FpsUpdate;
             this.fpsTicker.Start();
         }
 
@@ -84,7 +77,7 @@ namespace AudioVisualEffect.Views
         /// </summary>
         void RestoreGraph()
         {
-            Reset?.Invoke(null, EventArgs.Empty);   // デバイスロスト発生
+            this.Reset?.Invoke(null, EventArgs.Empty);   // デバイスロスト発生
         }
 
 
@@ -94,7 +87,7 @@ namespace AudioVisualEffect.Views
         void SetBackBuffer()
         {
             Lock();
-            SetBackBuffer(D3DResourceType.IDirect3DSurface9, DX.GetUseDirect3D9BackBufferSurface());
+            base.SetBackBuffer(D3DResourceType.IDirect3DSurface9, DX.GetUseDirect3D9BackBufferSurface());
             Unlock();
         }
 
@@ -107,7 +100,7 @@ namespace AudioVisualEffect.Views
         void ComponentDispatcher_ThreadIdle(object sender, EventArgs e)
         {
             this.fpsTicker.FrameUpdate();
-            this.Update?.Invoke(null, EventArgs.Empty); //  プログラム更新処理要求イベント
+            this.Update?.Invoke(null, EventArgs.Empty); // プログラム更新処理要求イベント
 
             DX.ClearDrawScreen();
             this.Render?.Invoke(null, EventArgs.Empty); // 描画処理要求イベント
@@ -116,7 +109,7 @@ namespace AudioVisualEffect.Views
 
 
         /// <summary>
-        /// 表示の更新
+        /// 表示の更新(ディスプレイのリフレッシュレート毎の処理？)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -124,12 +117,12 @@ namespace AudioVisualEffect.Views
         {
             try
             {
-                if (IsFrontBufferAvailable)
+                if (base.IsFrontBufferAvailable)
                 {
-                    Lock();
-                    SetBackBuffer(D3DResourceType.IDirect3DSurface9, DX.GetUseDirect3D9BackBufferSurface());
-                    AddDirtyRect(new Int32Rect(0, 0, PixelWidth, PixelHeight));
-                    Unlock();
+                    base.Lock();
+                    base.SetBackBuffer(D3DResourceType.IDirect3DSurface9, DX.GetUseDirect3D9BackBufferSurface());
+                    base.AddDirtyRect(new Int32Rect(0, 0, base.PixelWidth, base.PixelHeight));
+                    base.Unlock();
                 }
             }
             catch (Exception ex)
@@ -147,7 +140,7 @@ namespace AudioVisualEffect.Views
         void d3dImage_IsFrontBufferAvailableChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             this.fpsTicker.Stop();
-            if (IsFrontBufferAvailable)
+            if (base.IsFrontBufferAvailable)
             {
                 CompositionTarget.Rendering += CompositionTarget_Rendering;
             }
@@ -158,16 +151,6 @@ namespace AudioVisualEffect.Views
             this.fpsTicker.Start();
         }
 
-
-        /// <summary>
-        /// FPS更新イベント
-        /// </summary>
-        public virtual void OnFpsUpdate(object sender, EventArgs e)
-        {
-            var ea = new FpsUpdataEventArgs();
-            ea.Fps = this.fpsTicker.Fps.ToString();
-            this.FpsUpdate?.Invoke(null, ea);
-        }
 
 
         /// <summary>
@@ -180,7 +163,7 @@ namespace AudioVisualEffect.Views
                 return;
             }
 
-            this.fpsTicker.FpsUpdate -= OnFpsUpdate;
+            this.fpsTicker.FpsUpdate -= FpsUpdate;
             this.fpsTicker.Stop();
 
             DX.DxLib_End();
